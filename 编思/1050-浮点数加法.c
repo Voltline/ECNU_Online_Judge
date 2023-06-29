@@ -2,13 +2,14 @@
 #include <string.h>
 #include <stdlib.h>
 #define max(a, b) ((a) > (b)) ? (a) : (b)
+#define SIZE 502
 
 typedef struct
 {
     int In_Cnt;
     int De_Cnt;
-    int In[502];
-    int De[502];
+    int In[SIZE];
+    int De[SIZE];
 } Decimal;
 
 int find_p(const char* str)
@@ -27,9 +28,8 @@ int toDigit(char c)
 
 void strToDecimal(const char* str, Decimal* dec)
 {
-    // printf("str = %s\n", str);
-    memset(dec->De, 0, 502 * sizeof(int));
-    memset(dec->In, 0, 502 * sizeof(int));
+    memset(dec->De, 0, SIZE * sizeof(int));
+    memset(dec->In, 0, SIZE * sizeof(int));
     int loc = find_p(str), len = strlen(str);
     if (loc != -1) {
         dec->In_Cnt = (loc >= 1) ? loc : 1;
@@ -53,17 +53,17 @@ void strToDecimal(const char* str, Decimal* dec)
     }
 }
 
-Decimal Add(const Decimal* d1, const Decimal* d2)
+Decimal pure_add(const Decimal* d1, const Decimal* d2)
 {
     Decimal ans = *d1;
     for (int i = 0; i < d2->De_Cnt; i++) {
         ans.De[i] += d2->De[i];
     }
-    
+
     for (int i = 0; i < d2->In_Cnt; i++) {
         ans.In[i] += d2->In[i];
     }
-    
+
     int max_De_size = max(d1->De_Cnt, d2->De_Cnt);
     for (int i = max_De_size-1; i >= 1; i--) {
         if (ans.De[i] >= 10) {
@@ -75,7 +75,7 @@ Decimal Add(const Decimal* d1, const Decimal* d2)
         ans.In[0] += ans.De[0] / 10;
         ans.De[0] %= 10;
     }
-    for (int i = 501; i >= 0; i--) {
+    for (int i = SIZE-1; i >= 0; i--) {
         if (ans.De[i] != 0) {
             ans.De_Cnt = i+1;
             break;
@@ -89,13 +89,48 @@ Decimal Add(const Decimal* d1, const Decimal* d2)
             ans.In[i] %= 10;
         }
     }
-	for (int i = 501; i >= 0; i--) {
+	for (int i = SIZE-1; i >= 0; i--) {
         if (ans.In[i] != 0) {
             ans.In_Cnt = i+1;
             break;
         }
     }
     return ans;
+}
+
+Decimal pure_minus(const Decimal* d1, const Decimal* d2)
+{
+    Decimal ans = *d1;
+    for (int i = 0; i < d2->De_Cnt; i++) {
+        ans.De[i] -= d2->De[i];
+    }
+
+    for (int i = 0; i < d2->In_Cnt; i++) {
+        ans.In[i] -= d2->In[i];
+    }
+
+    for (int i = d2->De_Cnt-1; i >= 1; i--) {
+        if (ans.De[i] < 0) {
+            ans.De[i-1]--;
+            ans.De[i] += 10;
+        }
+    }
+    if (ans.De[0] < 0) {
+        ans.In[0]--;
+        ans.De[0] += 10;
+    }
+    //for (int i = 0; i <)
+    return ans;
+}
+
+Decimal Add(const Decimal* d1, const Decimal*d2)
+{
+    return pure_add(d1, d2);
+}
+
+Decimal Minus(const Decimal* d1, const Decimal* d2)
+{
+    return pure_minus(d1, d2);
 }
 
 void Print(const Decimal* dec, int T)
@@ -138,7 +173,7 @@ void Print(const Decimal* dec, int T)
 
 int main()
 {
-    char str[520] = {0}, str2[520] = {0};
+    char str[SIZE] = {0}, str2[SIZE] = {0};
     scanf("%s", str);
     scanf("%s", str2);
     int N = 0;
